@@ -12,10 +12,10 @@ init();
 function init() {
   if (!navigator.getUserMedia) return unsupported();
 
-  getLocalAudioStream(function(err, stream) {
+  getLocalAudioStream(function (err, stream) {
     if (err || !stream) return;
 
-    connectToPeerJS(function(err) {
+    connectToPeerJS(function (err) {
       if (err) return;
 
       registerIdWithServer(me.id);
@@ -28,17 +28,46 @@ function init() {
 // Connect to PeerJS and get an ID
 function connectToPeerJS(cb) {
   display('Connecting to PeerJS...');
-  me = new Peer({key: API_KEY});
+  me = new Peer({
+    key: API_KEY,
+    config: {
+      iceServers: [
+        {
+          urls: "stun:stun.relay.metered.ca:80",
+        },
+        {
+          urls: "turn:global.relay.metered.ca:80",
+          username: "86206efe2abcd483316919f7",
+          credential: "4uxXuuoTvoYhs4o9",
+        },
+        {
+          urls: "turn:global.relay.metered.ca:80?transport=tcp",
+          username: "86206efe2abcd483316919f7",
+          credential: "4uxXuuoTvoYhs4o9",
+        },
+        {
+          urls: "turn:global.relay.metered.ca:443",
+          username: "86206efe2abcd483316919f7",
+          credential: "4uxXuuoTvoYhs4o9",
+        },
+        {
+          urls: "turns:global.relay.metered.ca:443?transport=tcp",
+          username: "86206efe2abcd483316919f7",
+          credential: "4uxXuuoTvoYhs4o9",
+        }
+      ]
+    }
+  });
 
   me.on('call', handleIncomingCall);
-  
-  me.on('open', function() {
+
+  me.on('open', function () {
     display('Connected.');
     display('ID: ' + me.id);
     cb && cb(null, me);
   });
-  
-  me.on('error', function(err) {
+
+  me.on('error', function (err) {
     display(err);
     cb && cb(err);
   });
@@ -48,7 +77,7 @@ function connectToPeerJS(cb) {
 function registerIdWithServer() {
   display('Registering ID with server...');
   $.post('/' + call.id + '/addpeer/' + me.id);
-} 
+}
 
 // Remove our ID from the call's list of IDs
 function unregisterIdWithServer() {
@@ -64,12 +93,12 @@ function callPeer(peerId) {
   display('Calling ' + peerId + '...');
   var peer = getPeer(peerId);
   peer.outgoing = me.call(peerId, myStream);
-  
-  peer.outgoing.on('error', function(err) {
+
+  peer.outgoing.on('error', function (err) {
     display(err);
   });
 
-  peer.outgoing.on('stream', function(stream) {
+  peer.outgoing.on('stream', function (stream) {
     display('Connected to ' + peerId + '.');
     addIncomingStream(peer, stream);
   });
@@ -81,7 +110,7 @@ function handleIncomingCall(incoming) {
   var peer = getPeer(incoming.peer);
   peer.incoming = incoming;
   incoming.answer(myStream);
-  peer.incoming.on('stream', function(stream) {
+  peer.incoming.on('stream', function (stream) {
     addIncomingStream(peer, stream);
   });
 }
@@ -105,8 +134,8 @@ function playStream(stream) {
 function getLocalAudioStream(cb) {
   display('Trying to access your microphone. Please click "Allow".');
 
-  navigator.getUserMedia (
-    {video: false, audio: true},
+  navigator.getUserMedia(
+    { video: false, audio: true },
 
     function success(audioStream) {
       display('Microphone is open.');
@@ -126,14 +155,14 @@ function getLocalAudioStream(cb) {
 ////////////////////////////////////
 // Helper functions
 function getPeer(peerId) {
-  return peers[peerId] || (peers[peerId] = {id: peerId});
+  return peers[peerId] || (peers[peerId] = { id: peerId });
 }
 
 function displayShareMessage() {
   display('Give someone this URL to chat.');
   display('<input type="text" value="' + location.href + '" readonly>');
-  
-  $('#display input').click(function() {
+
+  $('#display input').click(function () {
     this.select();
   });
 }
