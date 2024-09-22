@@ -97,7 +97,8 @@ function addIncomingStream(peer, stream) {
 // Create an <audio> element to play the audio stream
 function playStream(stream) {
   var audio = $('<audio autoplay />').appendTo('body');
-  audio[0].src = (URL || webkitURL || mozURL).createObjectURL(stream);
+  audio[0].srcObject = stream;
+  audio[0].play();
 }
 
 // Get access to the microphone
