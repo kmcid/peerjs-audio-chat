@@ -19,6 +19,7 @@ function init() {
       if (err) return;
 
       registerIdWithServer(me.id);
+      displayMicToggle()
       if (call.peers.length) callPeers();
       else displayShareMessage();
     });
@@ -150,6 +151,16 @@ function getLocalAudioStream(cb) {
   );
 }
 
+// Mute or unmute microphone
+function toggleMic() {
+  if (myStream.getAudioTracks().length) {
+    myStream.getAudioTracks()[0].enabled = !myStream.getAudioTracks()[0].enabled;
+    console.log(!myStream.getAudioTracks()[0].enabled)
+    console.log(!myStream.getAudioTracks()[0].enabled ? 'Unmute Microphone' : 'Mute Microphone')
+    $('#mic-toggle').html(!myStream.getAudioTracks()[0].enabled ? 'Unmute Microphone' : 'Mute Microphone');
+  }
+}
+
 
 
 ////////////////////////////////////
@@ -165,6 +176,11 @@ function displayShareMessage() {
   $('#display input').click(function () {
     this.select();
   });
+}
+
+function displayMicToggle() {
+  var mic = $('<button id="mic-toggle" />').html('Mute Microphone').appendTo('#display');
+  mic.click(toggleMic);
 }
 
 function unsupported() {
